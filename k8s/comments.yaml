@@ -1,43 +1,45 @@
 
-apiVersion: apps/v1
-kind: Deployment
+# Deployment : définit comment déployer le conteneur Docker du service comments
+apiVersion: apps/v1        # Version de l'API Kubernetes utilisée
+kind: Deployment           # Type de ressource : un Deployment gère le cycle de vie des pods
 metadata:
-  name: comments-deployment
+  name: comments-deployment  # Nom unique du déploiement
 
 spec:
-  replicas: 1
+  replicas: 1              # Nombre d'instances du pod
 
   selector:
     matchLabels:
-      app: comments
+      app: comments        # Sélecteur pour identifier les pods de ce Deployment
 
   template:
     metadata:
       labels:
-        app: comments
+        app: comments      # Label des pods
 
     spec:
       containers:
-        - name: comments
-          image: comments:1.0
-          imagePullPolicy: IfNotPresent
+        - name: comments                  # Nom du conteneur
+          image: comments:1.0             # Image Docker du service comments (construite avec docker build -t comments:1.0 ./comments)
+          imagePullPolicy: IfNotPresent   # Utilise l'image locale si disponible
           ports:
-            - containerPort: 4001
+            - containerPort: 4001         # Port exposé par le conteneur (le service comments écoute sur 4001)
 
 ---
+# Service : expose le Deployment comments dans le cluster
 apiVersion: v1
 kind: Service
 metadata:
-  name: comments-srv
+  name: comments-srv       # Nom DNS du service (utilisé par l'event-bus et l'ingress pour communiquer avec ce service)
 
 spec:
-  type: ClusterIP
+  type: ClusterIP          # Accessible uniquement à l'intérieur du cluster
 
   selector:
-    app: comments
+    app: comments          # Cible les pods avec le label app=comments
 
   ports:
     - name: http
       protocol: TCP
-      port: 4001
-      targetPort: 4001
+      port: 4001           # Port du service dans le cluster
+      targetPort: 4001     # Port du conteneur Docker

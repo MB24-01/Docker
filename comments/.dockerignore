@@ -1,2 +1,2 @@
-node_modules
-
+# Fichiers et dossiers à exclure lors du build de l'image Docker du service comments
+node_modules   # Exclut les dépendances npm (elles seront réinstallées dans le conteneur via npm install)

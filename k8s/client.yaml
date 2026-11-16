@@ -1,43 +1,45 @@
 
-apiVersion: apps/v1
-kind: Deployment
+# Deployment : définit comment déployer le conteneur Docker du client
+apiVersion: apps/v1        # Version de l'API Kubernetes utilisée
+kind: Deployment           # Type de ressource : un Deployment gère le cycle de vie des pods
 metadata:
-  name: client-deployment
+  name: client-deployment  # Nom unique du déploiement dans le cluster
 
 spec:
-  replicas: 1
+  replicas: 1              # Nombre de réplicas (instances) du pod à exécuter
 
   selector:
     matchLabels:
-      app: client
+      app: client          # Sélecteur pour identifier les pods gérés par ce Deployment
 
   template:
     metadata:
       labels:
-        app: client
+        app: client        # Label appliqué aux pods pour les identifier
 
     spec:
       containers:
-        - name: client
-          image: client:1.0
-          imagePullPolicy: IfNotPresent
+        - name: client                    # Nom du conteneur dans le pod
+          image: client:1.0               # Image Docker utilisée (construite localement avec docker build)
+          imagePullPolicy: IfNotPresent   # Ne télécharge pas l'image si elle existe déjà localement (utile avec des images Docker locales)
           ports:
-            - containerPort: 3000
+            - containerPort: 3000         # Port exposé par le conteneur (l'app React écoute sur le port 3000)
 
 ---
-apiVersion: v1
-kind: Service
+# Service : expose le Deployment à l'intérieur du cluster Kubernetes
+apiVersion: v1             # Version de l'API Kubernetes
+kind: Service              # Type de ressource : un Service permet la communication réseau entre pods
 metadata:
-  name: client-srv
+  name: client-srv         # Nom DNS du service dans le cluster (les autres pods y accèdent via ce nom)
 
 spec:
-  type: ClusterIP
+  type: ClusterIP          # Type ClusterIP : accessible uniquement à l'intérieur du cluster (pas depuis l'extérieur)
 
   selector:
-    app: client
+    app: client            # Sélectionne les pods avec le label app=client
 
   ports:
-    - name: http
-      protocol: TCP
-      port: 3000
-      targetPort: 3000
+    - name: http           # Nom du port
+      protocol: TCP        # Protocole utilisé
+      port: 3000           # Port du service (celui qu'on utilise pour y accéder dans le cluster)
+      targetPort: 3000     # Port du conteneur Docker vers lequel le trafic est redirigé

@@ -1,36 +1,38 @@
 
-apiVersion: apps/v1
-kind: Deployment
+# Deployment : définit comment déployer le conteneur Docker du service moderation
+apiVersion: apps/v1        # Version de l'API Kubernetes
+kind: Deployment           # Gère le cycle de vie des pods de modération
 metadata:
-  name: moderation-deployment
+  name: moderation-deployment  # Nom unique du déploiement
 spec:
-  replicas: 1
+  replicas: 1              # Une seule instance
   selector:
     matchLabels:
-      app: moderation
+      app: moderation      # Sélecteur pour identifier les pods
   template:
     metadata:
       labels:
-        app: moderation
+        app: moderation    # Label des pods
     spec:
       containers:
-        - name: moderation
-          image: moderation:1.0
-          imagePullPolicy: IfNotPresent
+        - name: moderation                # Nom du conteneur
+          image: moderation:1.0           # Image Docker du service moderation (construite avec docker build -t moderation:1.0 ./moderation)
+          imagePullPolicy: IfNotPresent   # Utilise l'image locale si disponible
           ports:
-            - containerPort: 4003
+            - containerPort: 4003         # Port exposé (le service moderation écoute sur 4003)
 
 ---
+# Service : expose le service moderation dans le cluster
 apiVersion: v1
 kind: Service
 metadata:
-  name: moderation-srv
+  name: moderation-srv     # Nom DNS du service (l'event-bus envoie les événements à http://moderation-srv:4003/events)
 spec:
-  type: ClusterIP
+  type: ClusterIP          # Accessible uniquement dans le cluster
   selector:
-    app: moderation
+    app: moderation        # Cible les pods moderation
   ports:
     - name: http
       protocol: TCP
-      port: 4003
-      targetPort: 4003
+      port: 4003           # Port du service
+      targetPort: 4003     # Port du conteneur Docker

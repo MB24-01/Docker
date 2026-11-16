@@ -1,43 +1,48 @@
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+# Ingress : point d'entrée externe qui route le trafic HTTP vers les bons services internes du cluster
+apiVersion: networking.k8s.io/v1   # Version de l'API Kubernetes pour les ressources réseau
+kind: Ingress                       # Type Ingress : agit comme un reverse proxy / load balancer à l'entrée du cluster
 metadata:
-  name: microservices-ingress
+  name: microservices-ingress       # Nom de la ressource Ingress
   annotations:
-    nginx.org/path-regex: "case_sensitive"
+    nginx.org/path-regex: "case_sensitive"  # Active les regex sensibles à la casse pour le matching des chemins (spécifique au contrôleur Nginx)
 spec:
-  ingressClassName: nginx
+  ingressClassName: nginx           # Utilise le contrôleur Ingress Nginx (doit être installé dans le cluster)
   rules:
-    - host: localhost
+    - host: localhost               # Nom d'hôte pour lequel ces règles s'appliquent (en dev, c'est localhost)
       http:
         paths:
-          - path: /posts/[^/]+/comments/?$
-            pathType: ImplementationSpecific
+          # Route 1 : les commentaires d'un post spécifique → service comments
+          - path: /posts/[^/]+/comments/?$          # Regex : match /posts/{postId}/comments
+            pathType: ImplementationSpecific          # Le type de matching dépend du contrôleur Ingress
             backend:
               service:
-                name: comments-srv
+                name: comments-srv                   # Redirige vers le service Docker comments
                 port:
-                  number: 4001
+                  number: 4001                       # Port du service comments dans le cluster
 
-          - path: /posts/create$
+          # Route 2 : création d'un post → service posts
+          - path: /posts/create$                     # Regex : match exactement /posts/create
             pathType: ImplementationSpecific
             backend:
               service:
-                name: posts-clusterip-srv
+                name: posts-clusterip-srv            # Redirige vers le service Docker posts
                 port:
-                  number: 4000
+                  number: 4000                       # Port du service posts
 
-          - path: /posts$
+          # Route 3 : lecture des posts → service query
+          - path: /posts$                            # Regex : match exactement /posts
             pathType: ImplementationSpecific
             backend:
               service:
-                name: query-srv
+                name: query-srv                      # Redirige vers le service Docker query
                 port:
-                  number: 4002
+                  number: 4002                       # Port du service query
 
-          - path: /
+          # Route 4 : tout le reste → interface client React
+          - path: /                                  # Catch-all : toute URL non matchée par les routes précédentes
             pathType: ImplementationSpecific
             backend:
               service:
-                name: client-srv
+                name: client-srv                     # Redirige vers le service Docker client (React)
                 port:
-                  number: 3000
+                  number: 3000                       # Port du service client

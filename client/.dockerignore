@@ -1,3 +1,4 @@
-node_modules
-build
-.git
+# Fichiers et dossiers à exclure lors du build de l'image Docker du client
+node_modules   # Exclut les dépendances npm (elles seront réinstallées dans le conteneur via npm install)
+build          # Exclut le dossier de build React (sera regénéré dans le conteneur)
+.git           # Exclut le dossier git (inutile dans l'image Docker, réduit la taille)

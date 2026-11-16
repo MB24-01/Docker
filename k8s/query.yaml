@@ -1,36 +1,38 @@
 
-apiVersion: apps/v1
-kind: Deployment
+# Deployment : définit comment déployer le conteneur Docker du service query
+apiVersion: apps/v1        # Version de l'API Kubernetes
+kind: Deployment           # Gère le cycle de vie des pods du service query
 metadata:
-  name: query-deployment
+  name: query-deployment   # Nom unique du déploiement
 spec:
-  replicas: 1
+  replicas: 1              # Une seule instance
   selector:
     matchLabels:
-      app: query
+      app: query           # Sélecteur pour identifier les pods
   template:
     metadata:
       labels:
-        app: query
+        app: query         # Label des pods
     spec:
       containers:
-        - name: query
-          image: query:1.0
-          imagePullPolicy: IfNotPresent
+        - name: query                     # Nom du conteneur
+          image: query:1.0                # Image Docker du service query (construite avec docker build -t query:1.0 ./query)
+          imagePullPolicy: IfNotPresent   # Utilise l'image locale si disponible
           ports:
-            - containerPort: 4002
+            - containerPort: 4002         # Port exposé (le service query écoute sur 4002)
 
 ---
+# Service : expose le service query dans le cluster
 apiVersion: v1
 kind: Service
 metadata:
-  name: query-srv
+  name: query-srv          # Nom DNS du service (l'ingress redirige /posts vers ce service pour la lecture)
 spec:
-  type: ClusterIP
+  type: ClusterIP          # Accessible uniquement dans le cluster
   selector:
-    app: query
+    app: query             # Cible les pods query
   ports:
     - name: http
       protocol: TCP
-      port: 4002
-      targetPort: 4002
+      port: 4002           # Port du service
+      targetPort: 4002     # Port du conteneur Docker

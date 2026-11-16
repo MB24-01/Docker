@@ -1,26 +1,27 @@
 
-apiVersion: apps/v1
-kind: Deployment
+# Deployment : définit comment déployer le conteneur Docker du service posts
+apiVersion: apps/v1        # Version de l'API Kubernetes
+kind: Deployment           # Gère le cycle de vie des pods du service posts
 
 metadata:
-  name: posts-deployment
+  name: posts-deployment   # Nom unique du déploiement
 
 spec:
-  replicas: 1
+  replicas: 1              # Nombre d'instances du pod
 
   selector:
     matchLabels:
-      app: posts
+      app: posts           # Sélecteur pour identifier les pods
 
   template:
     metadata:
       labels:
-        app: posts
+        app: posts         # Label des pods
 
     spec:
       containers:
-        - name: posts
-          image: posts:1.0
-          imagePullPolicy: IfNotPresent
+        - name: posts                     # Nom du conteneur
+          image: posts:1.0                # Image Docker du service posts (construite avec docker build -t posts:1.0 ./posts)
+          imagePullPolicy: IfNotPresent   # Utilise l'image locale si disponible (ne tente pas de pull depuis un registry)
           ports:
-            - containerPort: 4000
+            - containerPort: 4000         # Port exposé par le conteneur (le service posts écoute sur 4000)

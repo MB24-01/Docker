@@ -1,36 +1,38 @@
 
-apiVersion: apps/v1
-kind: Deployment
+# Deployment : définit comment déployer le conteneur Docker du service event-bus
+apiVersion: apps/v1        # Version de l'API Kubernetes
+kind: Deployment           # Un Deployment assure que le nombre souhaité de pods est toujours en cours d'exécution
 metadata:
-  name: event-bus-deployment
+  name: event-bus-deployment  # Nom unique du déploiement
 spec:
-  replicas: 1
+  replicas: 1              # Une seule instance du bus d'événements
   selector:
     matchLabels:
-      app: event-bus
+      app: event-bus       # Sélecteur pour identifier les pods
   template:
     metadata:
       labels:
-        app: event-bus
+        app: event-bus     # Label des pods
     spec:
       containers:
-        - name: event-bus
-          image: event-bus:1.0
-          imagePullPolicy: IfNotPresent
+        - name: event-bus                 # Nom du conteneur
+          image: event-bus:1.0            # Image Docker de l'event-bus (construite avec docker build -t event-bus:1.0 ./event-bus)
+          imagePullPolicy: IfNotPresent   # Utilise l'image locale si disponible
           ports:
-            - containerPort: 4005
+            - containerPort: 4005         # Port exposé (l'event-bus écoute sur 4005)
 
 ---
+# Service : expose l'event-bus dans le cluster pour que tous les microservices puissent lui envoyer des événements
 apiVersion: v1
 kind: Service
 metadata:
-  name: event-bus-srv
+  name: event-bus-srv      # Nom DNS du service (tous les microservices envoient leurs événements à http://event-bus-srv:4005/events)
 spec:
-  type: ClusterIP
+  type: ClusterIP          # Accessible uniquement dans le cluster
   selector:
-    app: event-bus
+    app: event-bus         # Cible les pods event-bus
   ports:
     - name: http
       protocol: TCP
-      port: 4005
-      targetPort: 4005
+      port: 4005           # Port du service
+      targetPort: 4005     # Port du conteneur Docker
